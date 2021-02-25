@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/json.h
+
+/home/altair/Languages/C/copy/src/json-test.c
+json.h
+/home/altair/Languages/C/copy/src/json.h
+
+/home/altair/Languages/C/copy/src/json.c
+json.h
+/home/altair/Languages/C/copy/src/json.h
+stdio.h
+-
+

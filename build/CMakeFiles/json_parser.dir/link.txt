@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/json_parser.dir/src/json-test.c.o CMakeFiles/json_parser.dir/src/json.c.o -o json_parser 
