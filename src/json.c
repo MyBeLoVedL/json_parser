@@ -49,6 +49,8 @@ parse_result parse_false(json_node *node, json_context *context) {
 parse_result parse_value(json_node *node, json_context *context) {
   parse_result res;
   switch ((context->text)[0]) {
+  case 0:
+    return PARSE_EXPECT_VALUE;
   case 'n':
     res = parse_null(node, context);
     break;

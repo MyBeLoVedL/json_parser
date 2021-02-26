@@ -2,7 +2,13 @@
 
 void say_hello(const char *);
 
-typedef enum { PARSE_SUCCESS, PARSE_FAILED, PARSE_INVALID_VALUE } parse_result;
+typedef enum {
+  PARSE_SUCCESS,
+  PARSE_FAILED,
+  PARSE_INVALID_VALUE,
+  PARSE_EXPECT_VALUE
+} parse_result;
+
 typedef enum {
   JSON_NULL,
   JSON_TRUE,
