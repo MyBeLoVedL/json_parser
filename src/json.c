@@ -14,8 +14,14 @@ bool is_char(char ch) {
   return F;
 }
 
+bool is_space(char ch) {
+  if (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t')
+    return T;
+  return F;
+}
+
 void parse_space(json_context *context) {
-  const char *cur = context->text;
+  char *cur = context->text;
   while (*cur == ' ' || *cur == '\n' || *cur == '\t' || *cur == '\r' ||
          *cur == '\r')
     cur++;
@@ -25,6 +31,11 @@ void parse_space(json_context *context) {
 parse_result parse_null(json_node *node, json_context *context) {
   if (strncmp(context->text, "null", 4) || is_char(context->text[4]))
     return PARSE_INVALID_VALUE;
+  char *cur = context->text + 4;
+  while (is_space(*cur))
+    cur++;
+  if (*cur != 0)
+    return PARSE_ROOT_NOT_SINGULAR;
   context->text += 4;
   node->type = JSON_NULL;
   return PARSE_SUCCESS;
@@ -33,6 +44,11 @@ parse_result parse_null(json_node *node, json_context *context) {
 parse_result parse_true(json_node *node, json_context *context) {
   if (strncmp(context->text, "true", 4) || is_char(context->text[4]))
     return PARSE_INVALID_VALUE;
+  char *cur = context->text + 4;
+  while (is_space(*cur))
+    cur++;
+  if (*cur != 0)
+    return PARSE_ROOT_NOT_SINGULAR;
   context->text += 4;
   node->type = JSON_TRUE;
   return PARSE_SUCCESS;
@@ -41,6 +57,11 @@ parse_result parse_true(json_node *node, json_context *context) {
 parse_result parse_false(json_node *node, json_context *context) {
   if (strncmp(context->text, "false", 5) || is_char(context->text[5]))
     return PARSE_INVALID_VALUE;
+  char *cur = context->text + 5;
+  while (is_space(*cur))
+    cur++;
+  if (*cur != 0)
+    return PARSE_ROOT_NOT_SINGULAR;
   context->text += 5;
   node->type = JSON_FALSE;
   return PARSE_SUCCESS;

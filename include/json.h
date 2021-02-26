@@ -6,7 +6,8 @@ typedef enum {
   PARSE_SUCCESS,
   PARSE_FAILED,
   PARSE_INVALID_VALUE,
-  PARSE_EXPECT_VALUE
+  PARSE_EXPECT_VALUE,
+  PARSE_ROOT_NOT_SINGULAR
 } parse_result;
 
 typedef enum {
@@ -16,7 +17,8 @@ typedef enum {
   JSON_NUMBER,
   JSON_STRING,
   JSON_ARRAY,
-  JSON_OEJECT
+  JSON_OEJECT,
+  JSON_UNKOWN
 } json_type;
 
 typedef struct {
@@ -24,7 +26,7 @@ typedef struct {
 } json_node;
 
 typedef struct {
-  const char *text;
+  char *text;
 } json_context;
 
 parse_result parse_value(json_node *, json_context *);
