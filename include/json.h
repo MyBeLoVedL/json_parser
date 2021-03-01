@@ -1,4 +1,5 @@
 #pragma once
+#include "datatype.h"
 
 void say_hello(const char *);
 
@@ -23,6 +24,7 @@ typedef enum {
 
 typedef struct {
   json_type type;
+  double numeric;
 } json_node;
 
 typedef struct {
@@ -32,3 +34,5 @@ typedef struct {
 parse_result parse_value(json_node *, json_context *);
 
 parse_result parse_node(json_node *, json_context *);
+
+bool validate_number(const char *);
