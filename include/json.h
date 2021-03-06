@@ -3,15 +3,20 @@
 
 void say_hello(const char *);
 
-typedef enum {
+typedef enum
+{
   PARSE_SUCCESS,
   PARSE_FAILED,
   PARSE_INVALID_VALUE,
   PARSE_EXPECT_VALUE,
-  PARSE_ROOT_NOT_SINGULAR
+  PARSE_ROOT_NOT_SINGULAR,
+  PARSE_UNMATCHED_QUATATION_MARK,
+  PARSE_INVALID_CHAR_ESCAPE,
+  PARSE_INVALID_CHAR
 } parse_result;
 
-typedef enum {
+typedef enum
+{
   JSON_NULL,
   JSON_TRUE,
   JSON_FALSE,
@@ -22,17 +27,29 @@ typedef enum {
   JSON_UNKOWN
 } json_type;
 
-typedef struct {
+typedef struct
+{
   json_type type;
-  double numeric;
+  union
+  {
+    double numeric;
+    struct
+    {
+      char *start;
+      u32 len;
+    } string;
+  } content;
 } json_node;
 
-typedef struct {
-  char *text;
+typedef struct
+{
+  const char *text;
+  char *stack;
+  u32 top, size;
 } json_context;
 
 parse_result parse_value(json_node *, json_context *);
 
-parse_result parse_node(json_node *, json_context *);
+parse_result parse_node(json_node *, const char*);
 
 bool validate_number(const char *);
