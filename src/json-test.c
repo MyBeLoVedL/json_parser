@@ -86,25 +86,31 @@ void test_false()
   test_value(PARSE_SUCCESS, "  false  ", JSON_FALSE);
 }
 
+// void test_string()
+// {
+//   test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
+//   EXPECT_STRING(test_node.content.string.start, "hello,altair");
+
+//   test_value(PARSE_SUCCESS, "\"hello\\naltair\"", JSON_STRING);
+//   EXPECT_STRING(test_node.content.string.start, "hello\naltair");
+
+//   test_value(PARSE_SUCCESS, "\"\\nhelloaltair\"", JSON_STRING);
+//   EXPECT_STRING(test_node.content.string.start, "\nhelloaltair");
+
+//   test_value(PARSE_UNMATCHED_QUATATION_MARK, "\"\\nhelloaltair", JSON_UNKOWN);
+//   // EXPECT_STRING(test_node.content.string.start, "");
+
+//   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\nhelloa\\altair\"", JSON_UNKOWN);
+//   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\v\"", JSON_UNKOWN);
+//   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\x12\"", JSON_UNKOWN);
+//   test_value(PARSE_INVALID_CHAR, "\"\x01\"", JSON_UNKOWN);
+//   test_value(PARSE_INVALID_CHAR, "\"\x1F\"", JSON_UNKOWN);
+// }
+
 void test_string()
 {
-  test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "hello,altair");
-
-  test_value(PARSE_SUCCESS, "\"hello\\naltair\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "hello\naltair");
-
-  test_value(PARSE_SUCCESS, "\"\\nhelloaltair\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\nhelloaltair");
-
-  test_value(PARSE_UNMATCHED_QUATATION_MARK, "\"\\nhelloaltair", JSON_UNKOWN);
-  // EXPECT_STRING(test_node.content.string.start, "");
-
-  test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\nhelloa\\altair\"", JSON_UNKOWN);
-  test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\v\"", JSON_UNKOWN);
-  test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\x12\"", JSON_UNKOWN);
-  test_value(PARSE_INVALID_CHAR, "\"\x01\"", JSON_UNKOWN);
-  test_value(PARSE_INVALID_CHAR, "\"\x1F\"", JSON_UNKOWN);
+  test_value(PARSE_SUCCESS, "\"\\u20ac\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "\u20ac");
 }
 
 void test_number()

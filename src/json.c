@@ -143,6 +143,68 @@ bool validate_number(const char *src)
   return F;
 }
 
+u32 char_to_digit(char ch)
+{
+  if (ch >= '0' && ch <= '9')
+    return ch - '0';
+  else if (ch >= 'a' && ch <= 'f')
+    return ch - 'a' + 10;
+  else if (ch >= 'A' && ch <= 'F')
+    return ch - 'A' + 10;
+  else
+    return 16;
+}
+
+char *parse_4_hex(char *p, u32 *u)
+{
+  u32 res = 0;
+  for (int i = 0; i < 4; i++)
+  {
+    u32 t = char_to_digit(*(p + 3 - i));
+    if (t >= 16)
+      return NULL;
+    res += t << i * 4;
+  }
+  *u = res;
+  return p;
+}
+
+void encode_utf8(json_context *c, u32 u)
+{
+  if (u >= 0 && u <= 0x7f)
+  {
+    u8 t = (u & 0x7f);
+    stack_push(c, &t, 1);
+  }
+  else if (u >= 0x80 && u <= 0x07ff)
+  {
+    u8 byte2 = (u & 0x3f) | 0x80;
+    u8 byte1 = ((u >> 6) & 0x1f) | 0xc0;
+    stack_push(c, &byte1, 1);
+    stack_push(c, &byte2, 1);
+  }
+  else if (u >= 0x0800 && u <= 0xffff)
+  {
+    u8 byte3 = (u & 0x3f) | 0x80;
+    u8 byte2 = ((u >> 6) & 0x3f) | 0x80;
+    u8 byte1 = ((u >> 12) & 0x0f) | 0xe0;
+    stack_push(c, &byte1, 1);
+    stack_push(c, &byte2, 1);
+    stack_push(c, &byte3, 1);
+  }
+  else if (u >= 0x10000 && u <= 0x10ffff)
+  {
+    u8 byte4 = (u & 0x3f) | 0x80;
+    u8 byte3 = ((u >> 6) & 0x3f) | 0x80;
+    u8 byte2 = ((u >> 12) & 0x3f) | 0x80;
+    u8 byte1 = ((u >> 18) & 0x07) | 0xf0;
+    stack_push(c, &byte1, 1);
+    stack_push(c, &byte2, 1);
+    stack_push(c, &byte3, 1);
+    stack_push(c, &byte4, 1);
+  }
+}
+
 void parse_space(json_context *context)
 {
   const char *cur = context->text;
@@ -211,7 +273,8 @@ parse_result parse_string(json_node *node, json_context *context)
   char escape_char[9] = {0x22, 0x5c, 0x2f, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x75};
   char tmp_char;
   char tmp;
-  u32 cur_len;
+  u32 cur_len, u;
+  u8 flag_unicode;
   while (1)
   {
     switch (*p++)
@@ -234,15 +297,30 @@ parse_result parse_string(json_node *node, json_context *context)
       p++;
       int i;
       for (i = 0; i < 9; i++)
-        if (explicit_char[i] == tmp_char)
+        if (explicit_char[i] == tmp_char && i != 8)
         {
           tmp_char = escape_char[i];
+          break;
+        }
+        else if (explicit_char[i] == tmp_char && i == 8)
+        {
+          if (!parse_4_hex(p, &u))
+            return PARSE_INVALID_HEX;
+          p += 4;
+          head = p;
+          encode_utf8(context, u);
+          flag_unicode = 1;
           break;
         }
       if (i == 9)
       {
         context->top = 0;
         return PARSE_INVALID_CHAR_ESCAPE;
+      }
+      if (flag_unicode)
+      {
+        flag_unicode = 0;
+        continue;
       }
       stack_push(context, head, cur_len);
       stack_push(context, &tmp_char, 1);
