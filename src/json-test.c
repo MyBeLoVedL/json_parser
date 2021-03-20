@@ -86,31 +86,39 @@ void test_false()
   test_value(PARSE_SUCCESS, "  false  ", JSON_FALSE);
 }
 
-// void test_string()
-// {
-//   test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
-//   EXPECT_STRING(test_node.content.string.start, "hello,altair");
-
-//   test_value(PARSE_SUCCESS, "\"hello\\naltair\"", JSON_STRING);
-//   EXPECT_STRING(test_node.content.string.start, "hello\naltair");
-
-//   test_value(PARSE_SUCCESS, "\"\\nhelloaltair\"", JSON_STRING);
-//   EXPECT_STRING(test_node.content.string.start, "\nhelloaltair");
-
-//   test_value(PARSE_UNMATCHED_QUATATION_MARK, "\"\\nhelloaltair", JSON_UNKOWN);
-//   // EXPECT_STRING(test_node.content.string.start, "");
-
-//   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\nhelloa\\altair\"", JSON_UNKOWN);
-//   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\v\"", JSON_UNKOWN);
-//   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\x12\"", JSON_UNKOWN);
-//   test_value(PARSE_INVALID_CHAR, "\"\x01\"", JSON_UNKOWN);
-//   test_value(PARSE_INVALID_CHAR, "\"\x1F\"", JSON_UNKOWN);
-// }
-
 void test_string()
 {
+  test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "hello,altair");
+
+  test_value(PARSE_SUCCESS, "\"hello\\naltair\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "hello\naltair");
+
+  test_value(PARSE_SUCCESS, "\"\\nhelloaltair\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "\nhelloaltair");
+
+  test_value(PARSE_UNMATCHED_QUATATION_MARK, "\"\\nhelloaltair", JSON_UNKOWN);
+  // EXPECT_STRING(test_node.content.string.start, "");
+
+  test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\nhelloa\\altair\"", JSON_UNKOWN);
+  test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\v\"", JSON_UNKOWN);
+  test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\x12\"", JSON_UNKOWN);
+  test_value(PARSE_INVALID_CHAR, "\"\x01\"", JSON_UNKOWN);
+  test_value(PARSE_INVALID_CHAR, "\"\x1F\"", JSON_UNKOWN);
   test_value(PARSE_SUCCESS, "\"\\u20ac\"", JSON_STRING);
   EXPECT_STRING(test_node.content.string.start, "\u20ac");
+
+  test_value(PARSE_SUCCESS, "\"\\u0024\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "\x24");
+
+  test_value(PARSE_SUCCESS, "\"\\u00a2\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "\xc2\xa2");
+
+  test_value(PARSE_SUCCESS, "\"\\u20ac\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "\xe2\x82\xac");
+
+  test_value(PARSE_SUCCESS, "\"\\ud834\\udd1e\"", JSON_STRING);
+  EXPECT_STRING(test_node.content.string.start, "\xf0\x9d\x84\x9e");
 }
 
 void test_number()

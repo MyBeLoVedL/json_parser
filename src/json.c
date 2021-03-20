@@ -18,7 +18,7 @@ void say_hello(const char *name) { printf("hello,%s", name); }
 #define is_digit(d) ((d) >= '0' && (d) <= '9')
 #define is_natural(d) ((d) >= '1' && (d) <= '9')
 
-void stack_push(json_context *c, const char *src, u32 push_len)
+void stack_push(json_context *c, const u8 *src, u32 push_len)
 {
   if (c->top + push_len >= c->size)
   {
@@ -171,7 +171,10 @@ char *parse_4_hex(char *p, u32 *u)
 
 void encode_utf8(json_context *c, u32 u)
 {
-  if (u >= 0 && u <= 0x7f)
+  if (u >= 0xd800 && u <= 0xdbff)
+  {
+  }
+  else if (u >= 0 && u <= 0x7f)
   {
     u8 t = (u & 0x7f);
     stack_push(c, &t, 1);
@@ -264,15 +267,15 @@ parse_result parse_number(json_node *node, json_context *context)
 
 parse_result parse_string(json_node *node, json_context *context)
 {
-  const char *p = context->text;
+  const u8 *p = (const u8 *)context->text;
   assert(*p == '\"');
   p++;
   u32 len;
-  const char *head = p;
+  const u8 *head = p;
   char explicit_char[9] = {'\"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'};
   char escape_char[9] = {0x22, 0x5c, 0x2f, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x75};
-  char tmp_char;
-  char tmp;
+  u8 tmp_char;
+  u8 tmp;
   u32 cur_len, u;
   u8 flag_unicode;
   while (1)
@@ -284,7 +287,7 @@ parse_result parse_string(json_node *node, json_context *context)
       u32 top = context->top;
       const char *start = stack_pop(context, top);
       set_node_string(node, start, top);
-      context->text = p;
+      context->text = (const char *)p;
       return PARSE_SUCCESS;
     case '\0':
       context->top = 0;
@@ -304,13 +307,33 @@ parse_result parse_string(json_node *node, json_context *context)
         }
         else if (explicit_char[i] == tmp_char && i == 8)
         {
-          if (!parse_4_hex(p, &u))
+          if (!parse_4_hex((char *)p, &u))
             return PARSE_INVALID_HEX;
-          p += 4;
-          head = p;
-          encode_utf8(context, u);
-          flag_unicode = 1;
-          break;
+          if (u >= 0xd800 && u <= 0xdbff)
+          {
+            u32 l;
+            p += 4;
+            if (*p != '\\' | *(p + 1) != 'u')
+              return PARSE_INVALID_UNICODE_SURROGATE;
+            if (!parse_4_hex((char *)(p + 2), &l))
+              return PARSE_INVALID_HEX;
+            if (!(l >= 0xdc00 && l <= 0xdfff))
+              return PARSE_INVALID_UNICODE_SURROGATE;
+            u32 r = 0x10000 + (u - 0xd800) * 0x400 + (l - 0xdc00);
+            encode_utf8(context, r);
+            flag_unicode = 1;
+            p += 6;
+            head = p;
+            break;
+          }
+          else
+          {
+            p += 4;
+            head = p;
+            encode_utf8(context, u);
+            flag_unicode = 1;
+            break;
+          }
         }
       if (i == 9)
       {

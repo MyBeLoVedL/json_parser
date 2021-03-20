@@ -13,7 +13,8 @@ typedef enum
   PARSE_UNMATCHED_QUATATION_MARK,
   PARSE_INVALID_CHAR_ESCAPE,
   PARSE_INVALID_CHAR,
-  PARSE_INVALID_HEX
+  PARSE_INVALID_HEX,
+  PARSE_INVALID_UNICODE_SURROGATE
 } parse_result;
 
 typedef enum
@@ -51,6 +52,6 @@ typedef struct
 
 parse_result parse_value(json_node *, json_context *);
 
-parse_result parse_node(json_node *, const char*);
+parse_result parse_node(json_node *, const char *);
 
 bool validate_number(const char *);
