@@ -108,6 +108,7 @@ void test_string()
   test_value(PARSE_SUCCESS, "\"\\u20ac\"", JSON_STRING);
   EXPECT_STRING(test_node.content.string.start, "\u20ac");
 
+  // EXPECT_STRING(test_node.content.string.start, "\ud834");
   test_value(PARSE_SUCCESS, "\"\\u0024\"", JSON_STRING);
   EXPECT_STRING(test_node.content.string.start, "\x24");
 

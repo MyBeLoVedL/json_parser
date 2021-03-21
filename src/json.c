@@ -358,6 +358,39 @@ parse_result parse_string(json_node *node, json_context *context)
   }
 }
 
+parse_result parse_value(json_node *node, json_context *context);
+parse_result parse_array(json_node *node, json_context *context)
+{
+  const char *p = context->text;
+  assert(*p == '[');
+  p++;
+  parse_result res;
+  while (1)
+  {
+    json_node *tmp_node = malloc(sizeof(json_node));
+    tmp_node->type = JSON_UNKOWN;
+    if (*p == ',')
+    {
+      context->text++;
+      stack_push(context, tmp_node, sizeof(tmp_node));
+      continue;
+    }
+    else if (*p == ']')
+    {
+      node->type = JSON_ARRAY;
+      node->content.array.start = malloc(sizeof(context->top + 1));
+      memcpy(node->content.array.start, context->stack, context->top);
+      stack_pop(context, context->top);
+      return PARSE_SUCCESS;
+    }
+    else if (*p == '\0')
+      return PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET;
+    if ((res = parse_value(node, tmp_node)) != PARSE_SUCCESS)
+      return res;
+    stack_push(context, tmp_node, sizeof(tmp_node));
+  }
+}
+
 parse_result parse_value(json_node *node, json_context *context)
 {
   parse_result res;
@@ -377,6 +410,9 @@ parse_result parse_value(json_node *node, json_context *context)
     break;
   case '\"':
     res = parse_string(node, context);
+    break;
+  case '[':
+    res = parse_array(node, context);
     break;
   default:
     res = parse_number(node, context);
