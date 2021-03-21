@@ -93,13 +93,13 @@ void test_array()
   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
   EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
 
-  test_value(PARSE_SUCCESS, "[1,\"hello\"]", JSON_ARRAY);
+  test_value(PARSE_SUCCESS, "[1,  \"hello\"]", JSON_ARRAY);
   // EXPECT_INT(JSON_ARRAY, test_node.type);
   EXPECT_INT(JSON_NUMBER, test_node.arr_start->type);
   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
   EXPECT_STRING("hello", (test_node.arr_start + 1)->start);
 
-  test_value(PARSE_SUCCESS, "[1,2,false]", JSON_ARRAY);
+  test_value(PARSE_SUCCESS, "[1,  2,false]", JSON_ARRAY);
   EXPECT_INT(JSON_ARRAY, test_node.type);
   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
   EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);

@@ -362,6 +362,7 @@ parse_result parse_array(json_node *node, json_context *context)
   const char *p = context->text;
   u32 stack_init_pos = context->top;
   context->text++;
+  parse_space(context);
   parse_result res;
   while (1)
   {
@@ -371,6 +372,7 @@ parse_result parse_array(json_node *node, json_context *context)
     if (*p == ',')
     {
       context->text++;
+      parse_space(context);
       continue;
     }
     else if (*p == ']')
