@@ -136,11 +136,11 @@ bool validate_number(const char *src)
     while (is_digit(*src))
       src++;
   }
+  if (is_digit(*src))
+    return F;
   while (is_space(*src))
     src++;
-  if (*src == 0)
-    return T;
-  return F;
+  return T;
 }
 
 u32 char_to_digit(char ch)
@@ -274,7 +274,7 @@ parse_result parse_string(json_node *node, json_context *context)
   char escape_char[9] = {0x22, 0x5c, 0x2f, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x75};
   u8 tmp_char;
   u8 tmp;
-  u32 cur_len, u;
+  u32 cur_len, u, stack_init_pos = context->top;
   u8 flag_unicode;
   while (1)
   {
@@ -282,7 +282,7 @@ parse_result parse_string(json_node *node, json_context *context)
     {
     case '\"':
       stack_push(context, head, p - head - 1);
-      u32 top = context->top;
+      u32 top = context->top - stack_init_pos;
       const char *start = stack_pop(context, top);
       set_node_string(node, start, top);
       context->text = (const char *)p;
@@ -360,13 +360,14 @@ parse_result parse_value(json_node *node, json_context *context);
 parse_result parse_array(json_node *node, json_context *context)
 {
   const char *p = context->text;
-  assert(*p == '[');
-  p++;
+  u32 stack_init_pos = context->top;
+  context->text++;
   parse_result res;
   while (1)
   {
     json_node *tmp_node = malloc(sizeof(json_node));
     tmp_node->type = JSON_UNKOWN;
+    p = context->text;
     if (*p == ',')
     {
       context->text++;
@@ -374,18 +375,20 @@ parse_result parse_array(json_node *node, json_context *context)
     }
     else if (*p == ']')
     {
+      u32 top = context->top - stack_init_pos;
       node->type = JSON_ARRAY;
-      node->arr_start = malloc(sizeof(context->top + 1));
-      memcpy(node->start, context->stack, context->top);
-      stack_pop(context, context->top);
+      node->arr_start = malloc(top);
+      context->text++;
+      memcpy(node->arr_start, context->stack + stack_init_pos, top);
+      stack_pop(context, top);
       return PARSE_SUCCESS;
     }
     else if (*p == '\0')
       return PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET;
-    context->text++;
     if ((res = parse_value(tmp_node, context)) != PARSE_SUCCESS)
       return res;
-    stack_push(context, (u8 *)&tmp_node, sizeof(tmp_node));
+    parse_space(context);
+    stack_push(context, (u8 *)tmp_node, sizeof(json_node));
   }
 }
 

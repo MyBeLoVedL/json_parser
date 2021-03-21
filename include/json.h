@@ -43,7 +43,7 @@ typedef struct node
     };
     struct
     {
-      struct node **arr_start;
+      struct node *arr_start;
       u32 arr_len;
     };
   };

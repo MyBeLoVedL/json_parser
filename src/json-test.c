@@ -86,6 +86,43 @@ void test_false()
   test_value(PARSE_SUCCESS, "  false  ", JSON_FALSE);
 }
 
+void test_array()
+{
+  test_value(PARSE_SUCCESS, "[1,2]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
+
+  test_value(PARSE_SUCCESS, "[1,\"hello\"]", JSON_ARRAY);
+  // EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_INT(JSON_NUMBER, test_node.arr_start->type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_STRING("hello", (test_node.arr_start + 1)->start);
+
+  test_value(PARSE_SUCCESS, "[1,2,false]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
+  EXPECT_INT(JSON_FALSE, (test_node.arr_start + 2)->type);
+
+  test_value(PARSE_SUCCESS, "[1,[true,2],false]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_INT(JSON_ARRAY, (test_node.arr_start + 1)->type);
+
+  EXPECT_INT(JSON_FALSE, (test_node.arr_start + 2)->type);
+
+  EXPECT_INT(JSON_ARRAY, (test_node.arr_start + 1)->type);
+
+  EXPECT_INT(JSON_TRUE, (test_node.arr_start + 1)->arr_start->type);
+  EXPECT_INT(JSON_NUMBER, ((test_node.arr_start + 1)->arr_start + 1)->type);
+
+  test_value(PARSE_SUCCESS, "[ 1 , 2 ]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
+}
+
 void test_string()
 {
   test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
@@ -170,14 +207,15 @@ void test_number()
 
 void test_parse()
 {
-  test_true();
-  test_false();
-  test_null();
-  test_invalid_value();
-  test_expect_value();
-  test_root_not_singular();
-  test_number();
-  test_string();
+  // test_true();
+  // test_false();
+  // test_null();
+  // test_invalid_value();
+  // test_expect_value();
+  // test_root_not_singular();
+  // test_number();
+  // test_string();
+  test_array();
 }
 
 int main()
