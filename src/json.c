@@ -39,7 +39,7 @@ char *stack_pop(json_context *c, u32 pop_len)
 void free_node_string(json_node *node)
 {
   assert(node->type == JSON_STRING);
-  free((void *)node->content.string.start);
+  free((void *)node->start);
   node->type = JSON_UNKOWN;
 }
 
@@ -69,33 +69,33 @@ void node_set_bool(json_node *node, bool t)
 double node_get_numeric(json_node *node)
 {
   assert(node->type == JSON_NUMBER);
-  return node->content.numeric;
+  return node->numeric;
 }
 
 void node_set_numeric(json_node *node, double n)
 {
   assert(node->type == JSON_NUMBER);
-  node->content.numeric = n;
+  node->numeric = n;
 }
 
 char *node_get_string(json_node *node)
 {
   assert(node->type == JSON_STRING);
-  return node->content.string.start;
+  return node->start;
 }
 
 u32 node_get_string_len(json_node *node)
 {
   assert(node->type == JSON_STRING);
-  return node->content.string.len;
+  return node->len;
 }
 
 void set_node_string(json_node *node, const char *src, u32 len)
 {
   assert(node != NULL && (src != NULL || len == 0));
-  node->content.string.start = malloc(len + 1);
-  memcpy(node->content.string.start, src, len);
-  *(node->content.string.start + len) = 0;
+  node->start = malloc(len + 1);
+  memcpy(node->start, src, len);
+  *(node->start + len) = 0;
   node->type = JSON_STRING;
 }
 
@@ -223,7 +223,6 @@ parse_result parse_literal(json_node *node, json_context *context,
   int len = strlen(target);
   if (strncmp(context->text, target, len) || is_char(context->text[len]))
     return PARSE_INVALID_VALUE;
-  const char *cur = context->text + len;
   context->text += len;
   return PARSE_SUCCESS;
 }
@@ -259,7 +258,7 @@ parse_result parse_number(json_node *node, json_context *context)
     return PARSE_INVALID_VALUE;
   node->type = JSON_NUMBER;
   char *end;
-  node->content.numeric = strtod(context->text, &end);
+  node->numeric = strtod(context->text, &end);
   assert(end != context->text);
   context->text = end;
   return PARSE_SUCCESS;
@@ -270,7 +269,6 @@ parse_result parse_string(json_node *node, json_context *context)
   const u8 *p = (const u8 *)context->text;
   assert(*p == '\"');
   p++;
-  u32 len;
   const u8 *head = p;
   char explicit_char[9] = {'\"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'};
   char escape_char[9] = {0x22, 0x5c, 0x2f, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x75};
@@ -372,22 +370,22 @@ parse_result parse_array(json_node *node, json_context *context)
     if (*p == ',')
     {
       context->text++;
-      stack_push(context, tmp_node, sizeof(tmp_node));
       continue;
     }
     else if (*p == ']')
     {
       node->type = JSON_ARRAY;
-      node->content.array.start = malloc(sizeof(context->top + 1));
-      memcpy(node->content.array.start, context->stack, context->top);
+      node->arr_start = malloc(sizeof(context->top + 1));
+      memcpy(node->start, context->stack, context->top);
       stack_pop(context, context->top);
       return PARSE_SUCCESS;
     }
     else if (*p == '\0')
       return PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET;
-    if ((res = parse_value(node, tmp_node)) != PARSE_SUCCESS)
+    context->text++;
+    if ((res = parse_value(tmp_node, context)) != PARSE_SUCCESS)
       return res;
-    stack_push(context, tmp_node, sizeof(tmp_node));
+    stack_push(context, (u8 *)&tmp_node, sizeof(tmp_node));
   }
 }
 

@@ -89,16 +89,16 @@ void test_false()
 void test_string()
 {
   test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "hello,altair");
+  EXPECT_STRING(test_node.start, "hello,altair");
 
   test_value(PARSE_SUCCESS, "\"hello\\naltair\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "hello\naltair");
+  EXPECT_STRING(test_node.start, "hello\naltair");
 
   test_value(PARSE_SUCCESS, "\"\\nhelloaltair\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\nhelloaltair");
+  EXPECT_STRING(test_node.start, "\nhelloaltair");
 
   test_value(PARSE_UNMATCHED_QUATATION_MARK, "\"\\nhelloaltair", JSON_UNKOWN);
-  // EXPECT_STRING(test_node.content.string.start, "");
+  // EXPECT_STRING(test_node.start, "");
 
   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\nhelloa\\altair\"", JSON_UNKOWN);
   test_value(PARSE_INVALID_CHAR_ESCAPE, "\"\\v\"", JSON_UNKOWN);
@@ -106,60 +106,60 @@ void test_string()
   test_value(PARSE_INVALID_CHAR, "\"\x01\"", JSON_UNKOWN);
   test_value(PARSE_INVALID_CHAR, "\"\x1F\"", JSON_UNKOWN);
   test_value(PARSE_SUCCESS, "\"\\u20ac\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\u20ac");
+  EXPECT_STRING(test_node.start, "\u20ac");
 
-  // EXPECT_STRING(test_node.content.string.start, "\ud834");
+  // EXPECT_STRING(test_node.start, "\ud834");
   test_value(PARSE_SUCCESS, "\"\\u0024\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\x24");
+  EXPECT_STRING(test_node.start, "\x24");
 
   test_value(PARSE_SUCCESS, "\"\\u00a2\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\xc2\xa2");
+  EXPECT_STRING(test_node.start, "\xc2\xa2");
 
   test_value(PARSE_SUCCESS, "\"\\u20ac\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\xe2\x82\xac");
+  EXPECT_STRING(test_node.start, "\xe2\x82\xac");
 
   test_value(PARSE_SUCCESS, "\"\\ud834\\udd1e\"", JSON_STRING);
-  EXPECT_STRING(test_node.content.string.start, "\xf0\x9d\x84\x9e");
+  EXPECT_STRING(test_node.start, "\xf0\x9d\x84\x9e");
 }
 
 void test_number()
 {
   test_value(PARSE_SUCCESS, "3.14159", JSON_NUMBER);
-  EXPECT_DOUBLE(3.14159, test_node.content.numeric);
+  EXPECT_DOUBLE(3.14159, test_node.numeric);
   test_value(PARSE_SUCCESS, "-3.14159", JSON_NUMBER);
-  EXPECT_DOUBLE(-3.14159, test_node.content.numeric);
+  EXPECT_DOUBLE(-3.14159, test_node.numeric);
   test_value(PARSE_SUCCESS, "0", JSON_NUMBER);
-  EXPECT_DOUBLE(0.0, test_node.content.numeric);
+  EXPECT_DOUBLE(0.0, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "-0.0", JSON_NUMBER);
-  EXPECT_DOUBLE(0.0, test_node.content.numeric);
+  EXPECT_DOUBLE(0.0, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "  1  ", JSON_NUMBER);
-  EXPECT_DOUBLE(1.0, test_node.content.numeric);
+  EXPECT_DOUBLE(1.0, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "-1", JSON_NUMBER);
-  EXPECT_DOUBLE(-1.0, test_node.content.numeric);
+  EXPECT_DOUBLE(-1.0, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "  1E10", JSON_NUMBER);
-  EXPECT_DOUBLE(1E10, test_node.content.numeric);
+  EXPECT_DOUBLE(1E10, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "0", JSON_NUMBER);
-  EXPECT_DOUBLE(0.0, test_node.content.numeric);
+  EXPECT_DOUBLE(0.0, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "1E+10", JSON_NUMBER);
-  EXPECT_DOUBLE(1E+10, test_node.content.numeric);
+  EXPECT_DOUBLE(1E+10, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "1E-10", JSON_NUMBER);
-  EXPECT_DOUBLE(1E-10, test_node.content.numeric);
+  EXPECT_DOUBLE(1E-10, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "-1E-10", JSON_NUMBER);
-  EXPECT_DOUBLE(-1E-10, test_node.content.numeric);
+  EXPECT_DOUBLE(-1E-10, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "1.234E+10", JSON_NUMBER);
-  EXPECT_DOUBLE(1.234E+10, test_node.content.numeric);
+  EXPECT_DOUBLE(1.234E+10, test_node.numeric);
 
   test_value(PARSE_SUCCESS, "-1.23E+10", JSON_NUMBER);
-  EXPECT_DOUBLE(-1.23E+10, test_node.content.numeric);
+  EXPECT_DOUBLE(-1.23E+10, test_node.numeric);
 
   test_value(PARSE_INVALID_VALUE, "+0", JSON_UNKOWN);
   test_value(PARSE_INVALID_VALUE, ".123", JSON_UNKOWN);

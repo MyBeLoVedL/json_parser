@@ -14,7 +14,8 @@ typedef enum
   PARSE_INVALID_CHAR_ESCAPE,
   PARSE_INVALID_CHAR,
   PARSE_INVALID_HEX,
-  PARSE_INVALID_UNICODE_SURROGATE
+  PARSE_INVALID_UNICODE_SURROGATE,
+  PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET
 } parse_result;
 
 typedef enum
@@ -29,7 +30,7 @@ typedef enum
   JSON_UNKOWN
 } json_type;
 
-typedef struct
+typedef struct node
 {
   json_type type;
   union
@@ -39,8 +40,13 @@ typedef struct
     {
       char *start;
       u32 len;
-    } string;
-  } content;
+    };
+    struct
+    {
+      struct node **arr_start;
+      u32 arr_len;
+    };
+  };
 } json_node;
 
 typedef struct
