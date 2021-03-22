@@ -3,6 +3,9 @@
 
 void say_hello(const char *);
 
+typedef struct json_node json_node;
+typedef struct json_member json_member;
+
 typedef enum
 {
   PARSE_SUCCESS,
@@ -15,7 +18,11 @@ typedef enum
   PARSE_INVALID_CHAR,
   PARSE_INVALID_HEX,
   PARSE_INVALID_UNICODE_SURROGATE,
-  PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET
+  PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET,
+  PARSE_MISSING_KEY,
+  PARSE_MISSING_SEMI_COLON,
+  PARSE_MISSING_VALUE,
+  PARSE_MISSING_CURLY_BRACKET
 } parse_result;
 
 typedef enum
@@ -30,7 +37,7 @@ typedef enum
   JSON_UNKOWN
 } json_type;
 
-typedef struct node
+struct json_node
 {
   json_type type;
   union
@@ -43,12 +50,23 @@ typedef struct node
     };
     struct
     {
-      struct node *arr_start;
+      json_node *arr_start;
       u32 arr_len;
     };
+    struct
+    {
+      json_member *member;
+      u32 mem_len;
+    };
   };
-} json_node;
+};
 
+struct json_member
+{
+  char *K;
+  u32 key_size;
+  json_node V;
+};
 typedef struct
 {
   const char *text;
@@ -62,7 +80,12 @@ parse_result parse_node(json_node *, const char *);
 
 json_node *get_array_element(json_node *node, u32 index);
 
-bool validate_number(const char *);
+const char *get_obj_key(json_node *node, u32 index);
 
+json_node *get_obj_value(json_node *node, u32 index);
+
+json_node *get_value_by_key(json_node *node,char *K);
+
+bool validate_number(const char *);
 
 void free_node(json_node *node);

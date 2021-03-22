@@ -86,58 +86,53 @@ void test_false()
   test_value(PARSE_SUCCESS, "  false  ", JSON_FALSE);
 }
 
-// void test_array()
-// {
-//   test_value(PARSE_SUCCESS, "[1,2]", JSON_ARRAY);
-//   EXPECT_INT(JSON_ARRAY, test_node.type);
-//   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
-//   EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
-
-//   test_value(PARSE_SUCCESS, "[1,  \"hello\"]", JSON_ARRAY);
-//   // EXPECT_INT(JSON_ARRAY, test_node.type);
-//   EXPECT_INT(JSON_NUMBER, test_node.arr_start->type);
-//   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
-//   EXPECT_STRING("hello", (test_node.arr_start + 1)->start);
-
-//   test_value(PARSE_SUCCESS, "[1,  2,false]", JSON_ARRAY);
-//   EXPECT_INT(JSON_ARRAY, test_node.type);
-//   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
-//   EXPECT_DOUBLE(2.0, get_array_element(&test_node, 1)->numeric);
-//   EXPECT_INT(JSON_FALSE, get_array_element(&test_node, 2)->type);
-
-//   test_value(PARSE_SUCCESS, "[1,[true,2],false]", JSON_ARRAY);
-//   EXPECT_INT(JSON_ARRAY, test_node.type);
-//   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
-//   EXPECT_INT(JSON_ARRAY, (test_node.arr_start + 1)->type);
-
-//   EXPECT_INT(JSON_FALSE, (test_node.arr_start + 2)->type);
-
-//   EXPECT_INT(JSON_ARRAY, (test_node.arr_start + 1)->type);
-
-//   EXPECT_INT(JSON_TRUE, (test_node.arr_start + 1)->arr_start->type);
-//   EXPECT_INT(JSON_NUMBER, ((test_node.arr_start + 1)->arr_start + 1)->type);
-
-//   test_value(PARSE_SUCCESS, "[ 1 , 2 ]", JSON_ARRAY);
-//   EXPECT_INT(JSON_ARRAY, test_node.type);
-//   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
-//   EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
-
-//   test_value(PARSE_SUCCESS, "[ null , false , true , 123 , \"abc\" ]", JSON_ARRAY);
-//   EXPECT_INT(JSON_ARRAY, test_node.type);
-//   EXPECT_INT(JSON_NULL, get_array_element(&test_node, 0)->type);
-//   EXPECT_INT(JSON_TRUE, get_array_element(&test_node, 2)->type);
-//   EXPECT_DOUBLE(123.0, get_array_element(&test_node, 3)->numeric);
-//   EXPECT_STRING("abc", get_array_element(&test_node, 4)->start);
-// }
-
 void test_array()
 {
+  test_value(PARSE_SUCCESS, "[1,2]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
 
+  free_node(&test_node);
   test_value(PARSE_SUCCESS, "[1,  \"hello\"]", JSON_ARRAY);
   // EXPECT_INT(JSON_ARRAY, test_node.type);
   EXPECT_INT(JSON_NUMBER, test_node.arr_start->type);
   EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
   EXPECT_STRING("hello", (test_node.arr_start + 1)->start);
+
+  free_node(&test_node);
+  test_value(PARSE_SUCCESS, "[1,  2,false]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_DOUBLE(2.0, get_array_element(&test_node, 1)->numeric);
+  EXPECT_INT(JSON_FALSE, get_array_element(&test_node, 2)->type);
+
+  free_node(&test_node);
+  test_value(PARSE_SUCCESS, "[1,[true,2],false]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_INT(JSON_ARRAY, (test_node.arr_start + 1)->type);
+
+  EXPECT_INT(JSON_FALSE, (test_node.arr_start + 2)->type);
+
+  EXPECT_INT(JSON_ARRAY, (test_node.arr_start + 1)->type);
+
+  EXPECT_INT(JSON_TRUE, (test_node.arr_start + 1)->arr_start->type);
+  EXPECT_INT(JSON_NUMBER, ((test_node.arr_start + 1)->arr_start + 1)->type);
+
+  free_node(&test_node);
+  test_value(PARSE_SUCCESS, "[ 1 , 2 ]", JSON_ARRAY);
+  EXPECT_INT(JSON_ARRAY, test_node.type);
+  EXPECT_DOUBLE(1.0, test_node.arr_start->numeric);
+  EXPECT_DOUBLE(2.0, (test_node.arr_start + 1)->numeric);
+
+  // free_node(&test_node);
+  // test_value(PARSE_SUCCESS, "[ null , false , true , 123 , \"abc\" ]", JSON_ARRAY);
+  // EXPECT_INT(JSON_ARRAY, test_node.type);
+  // EXPECT_INT(JSON_NULL, get_array_element(&test_node, 0)->type);
+  // EXPECT_INT(JSON_TRUE, get_array_element(&test_node, 2)->type);
+  // EXPECT_DOUBLE(123.0, get_array_element(&test_node, 3)->numeric);
+  // EXPECT_STRING("abc", get_array_element(&test_node, 4)->start);
 }
 
 void test_string()
@@ -145,9 +140,11 @@ void test_string()
   test_value(PARSE_SUCCESS, "\"hello,altair\"", JSON_STRING);
   EXPECT_STRING(test_node.start, "hello,altair");
 
+  free_node(&test_node);
   test_value(PARSE_SUCCESS, "\"hello\\naltair\"", JSON_STRING);
   EXPECT_STRING(test_node.start, "hello\naltair");
 
+  free_node(&test_node);
   test_value(PARSE_SUCCESS, "\"\\nhelloaltair\"", JSON_STRING);
   EXPECT_STRING(test_node.start, "\nhelloaltair");
 
@@ -222,6 +219,34 @@ void test_number()
   test_value(PARSE_INVALID_VALUE, "007", JSON_UNKOWN);
 }
 
+void test_object()
+{
+  test_value(PARSE_SUCCESS, "{\"age\":12}", JSON_OEJECT);
+  EXPECT_STRING("age", get_obj_key(&test_node, 0));
+  EXPECT_DOUBLE(12.0, get_obj_value(&test_node, 0)->numeric);
+
+  test_value(PARSE_SUCCESS, "{\"age\":12, \"name\" : \"altair Lee\"}", JSON_OEJECT);
+  EXPECT_STRING("age", get_obj_key(&test_node, 0));
+  EXPECT_DOUBLE(12.0, get_obj_value(&test_node, 0)->numeric);
+
+  EXPECT_STRING("name", get_obj_key(&test_node, 1));
+  EXPECT_STRING("altair Lee", get_obj_value(&test_node, 1)->start);
+
+  test_value(PARSE_SUCCESS, "{\"age\":12, \"name\" : \"altair Lee\",\"properties\" : {\"Chinese\": 130,\"Math\":150}}", JSON_OEJECT);
+
+  EXPECT_DOUBLE(150.0, get_obj_value(get_obj_value(&test_node, 2), 1)->numeric);
+
+  EXPECT_STRING("altair Lee", get_value_by_key(&test_node, "name")->start);
+  EXPECT_DOUBLE(130.0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Chinese")->numeric);
+
+  test_value(PARSE_MISSING_SEMI_COLON, "{\"age\" 12}", JSON_UNKOWN);
+
+  test_value(PARSE_MISSING_KEY, "{: 12}", JSON_UNKOWN);
+
+  test_value(PARSE_MISSING_VALUE, "{\"age \": }", JSON_UNKOWN);
+  // EXPECT_INT(0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Cinese")->numeric);
+}
+
 void test_parse()
 {
   // test_true();
@@ -232,8 +257,8 @@ void test_parse()
   // test_root_not_singular();
   // test_number();
   // test_string();
-  test_array();
-  free_node(&test_node);
+  // test_array();
+  test_object();
 }
 
 int main()

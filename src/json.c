@@ -41,6 +41,31 @@ json_type node_get_type(json_node *node)
   return node->type;
 }
 
+const char *get_obj_key(json_node *node, u32 index)
+{
+  assert(node->type == JSON_OEJECT);
+  assert(index >= 0 && index < node->mem_len);
+  return (node->member + index)->K;
+}
+
+json_node *get_obj_value(json_node *node, u32 index)
+{
+  assert(node->type == JSON_OEJECT);
+  assert(index >= 0 && index < node->mem_len);
+  return &((node->member + index)->V);
+}
+
+json_node *get_value_by_key(json_node *node, char *K)
+{
+  assert(node->type == JSON_OEJECT);
+  for (int i = 0; i < node->mem_len; i++)
+  {
+    if (!strcmp(get_obj_key(node, i), K))
+      return get_obj_value(node, i);
+  }
+  return NULL;
+}
+
 bool node_get_bool(json_node *node)
 {
   assert(node->type == JSON_TRUE || node->type == JSON_FALSE);
@@ -283,10 +308,11 @@ parse_result parse_number(json_node *node, json_context *context)
   return PARSE_SUCCESS;
 }
 
-parse_result parse_string(json_node *node, json_context *context)
+parse_result parse_string_raw(json_context *context, char **src, u32 *len)
 {
   const u8 *p = (const u8 *)context->text;
-  assert(*p == '\"');
+  if (*p != '\"')
+    return PARSE_INVALID_VALUE;
   p++;
   const u8 *head = p;
   char explicit_char[9] = {'\"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'};
@@ -303,8 +329,9 @@ parse_result parse_string(json_node *node, json_context *context)
       stack_push(context, head, p - head - 1);
       u32 top = context->top - stack_init_pos;
       const char *start = stack_pop(context, top);
-      set_node_string(node, start, top);
       context->text = (const char *)p;
+      *src = (char *)start;
+      *len = top;
       return PARSE_SUCCESS;
     case '\0':
       context->top = 0;
@@ -375,6 +402,18 @@ parse_result parse_string(json_node *node, json_context *context)
   }
 }
 
+parse_result parse_string(json_node *node, json_context *context)
+{
+  char *src;
+  u32 len;
+  parse_result res;
+  if ((res = parse_string_raw(context, &src, &len)) != PARSE_SUCCESS)
+    return res;
+  node->type = JSON_STRING;
+  set_node_string(node, src, len);
+  return PARSE_SUCCESS;
+};
+
 parse_result parse_value(json_node *node, json_context *context);
 parse_result parse_array(json_node *node, json_context *context)
 {
@@ -418,6 +457,57 @@ parse_result parse_array(json_node *node, json_context *context)
   }
 }
 
+parse_result parse_object(json_node *node, json_context *context)
+{
+  const char *p = context->text;
+  u32 stack_init_pos = context->top;
+  context->text++;
+  parse_space(context);
+  parse_result res;
+  json_member tmp_member;
+  char *src;
+  u32 len;
+  while (1)
+  {
+    p = context->text;
+    if (*p == ',')
+    {
+      context->text++;
+      parse_space(context);
+      continue;
+    }
+    else if (*p == '}')
+    {
+      u32 top = context->top - stack_init_pos;
+      node->type = JSON_OEJECT;
+      node->member = malloc(top);
+      context->text++;
+      memcpy(node->member, context->stack + stack_init_pos, top);
+      stack_pop(context, top);
+      return PARSE_SUCCESS;
+    }
+    else if (*p == '\0')
+    {
+      return PARSE_MISSING_CURLY_BRACKET;
+    }
+    if ((res = parse_string_raw(context, &src, &len)) != PARSE_SUCCESS)
+      return PARSE_MISSING_KEY;
+    tmp_member.key_size = len;
+    tmp_member.K = malloc(len + 1);
+    memcpy(tmp_member.K, src, len);
+    tmp_member.K[len] = '\0';
+    parse_space(context);
+    if (*(context->text) != ':')
+      return PARSE_MISSING_SEMI_COLON;
+    context->text++;
+    parse_space(context);
+    if ((res = parse_value(&(tmp_member.V), context)) != PARSE_SUCCESS)
+      return PARSE_MISSING_VALUE;
+    node->mem_len++;
+    stack_push(context, (u8 *)&tmp_member, sizeof(json_member));
+  }
+}
+
 parse_result parse_value(json_node *node, json_context *context)
 {
   parse_result res;
@@ -440,6 +530,9 @@ parse_result parse_value(json_node *node, json_context *context)
     break;
   case '[':
     res = parse_array(node, context);
+    break;
+  case '{':
+    res = parse_object(node, context);
     break;
   default:
     res = parse_number(node, context);
