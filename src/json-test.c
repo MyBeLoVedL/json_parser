@@ -2,7 +2,9 @@
 #include "json.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
 #define EXPECT_INT(expect, actual)                                        \
   do                                                                      \
   {                                                                       \
@@ -245,19 +247,36 @@ void test_object()
 
   test_value(PARSE_MISSING_VALUE, "{\"age \": }", JSON_UNKOWN);
   // EXPECT_INT(0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Cinese")->numeric);
+  int fd = open("../test_json.txt", O_RDONLY);
+  if (fd < 0)
+  {
+    perror("file open error");
+    exit(EXIT_FAILURE);
+  }
+  void *buf = malloc(10240);
+  u32 size = read(fd, buf, 10240);
+  if (size <= 0)
+  {
+    perror("file read error");
+    exit(EXIT_FAILURE);
+  }
+  *((char *)buf + size) = '\0';
+  test_value(PARSE_SUCCESS, buf, JSON_OEJECT);
+  EXPECT_STRING("altair", get_value_by_key(&test_node, "name")->start);
+  EXPECT_DOUBLE(150.0, get_value_by_key(get_value_by_key(&test_node, "grades"), "Math")->numeric);
 }
 
 void test_parse()
 {
-  // test_true();
-  // test_false();
-  // test_null();
-  // test_invalid_value();
-  // test_expect_value();
-  // test_root_not_singular();
-  // test_number();
-  // test_string();
-  // test_array();
+  test_true();
+  test_false();
+  test_null();
+  test_invalid_value();
+  test_expect_value();
+  test_root_not_singular();
+  test_number();
+  test_string();
+  test_array();
   test_object();
 }
 

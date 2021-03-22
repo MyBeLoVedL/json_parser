@@ -1,0 +1,8 @@
+{
+    "name" : "altair",
+    "age" : 20,
+    "grades" : {
+        "Math" : 150,
+        "Chinese" : 130
+    }
+}

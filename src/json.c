@@ -505,6 +505,7 @@ parse_result parse_object(json_node *node, json_context *context)
       return PARSE_MISSING_VALUE;
     node->mem_len++;
     stack_push(context, (u8 *)&tmp_member, sizeof(json_member));
+    parse_space(context);
   }
 }
 
