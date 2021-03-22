@@ -36,13 +36,6 @@ char *stack_pop(json_context *c, u32 pop_len)
   return c->stack + c->top;
 }
 
-void free_node_string(json_node *node)
-{
-  assert(node->type == JSON_STRING);
-  free((void *)node->start);
-  node->type = JSON_UNKOWN;
-}
-
 json_type node_get_type(json_node *node)
 {
   return node->type;
@@ -215,6 +208,25 @@ json_node *get_array_element(json_node *node, u32 index)
   return node->arr_start + index;
 }
 
+void free_node(json_node *node)
+{
+  switch (node->type)
+  {
+  case JSON_STRING:
+    free(node->start);
+    break;
+  case JSON_ARRAY:
+    for (int i = 0; i < node->arr_len; i++)
+    {
+      free_node(get_array_element(node, i));
+    }
+    free(node->arr_start);
+    break;
+  default:
+    break;
+  }
+}
+
 void parse_space(json_context *context)
 {
   const char *cur = context->text;
@@ -371,10 +383,10 @@ parse_result parse_array(json_node *node, json_context *context)
   context->text++;
   parse_space(context);
   parse_result res;
+  json_node *tmp_node = malloc(sizeof(json_node));
+  tmp_node->type = JSON_UNKOWN;
   while (1)
   {
-    json_node *tmp_node = malloc(sizeof(json_node));
-    tmp_node->type = JSON_UNKOWN;
     p = context->text;
     if (*p == ',')
     {
@@ -390,10 +402,14 @@ parse_result parse_array(json_node *node, json_context *context)
       context->text++;
       memcpy(node->arr_start, context->stack + stack_init_pos, top);
       stack_pop(context, top);
+      free(tmp_node);
       return PARSE_SUCCESS;
     }
     else if (*p == '\0')
+    {
+      free(tmp_node);
       return PARSE_ARRAY_UNMATCHED_SQUARE_BRACKET;
+    }
     if ((res = parse_value(tmp_node, context)) != PARSE_SUCCESS)
       return res;
     parse_space(context);
