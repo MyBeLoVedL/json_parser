@@ -208,6 +208,13 @@ void encode_utf8(json_context *c, u32 u)
   }
 }
 
+json_node *get_array_element(json_node *node, u32 index)
+{
+  assert(node->type == JSON_ARRAY);
+  assert(index >= 0 && index < node->arr_len);
+  return node->arr_start + index;
+}
+
 void parse_space(json_context *context)
 {
   const char *cur = context->text;
@@ -390,6 +397,7 @@ parse_result parse_array(json_node *node, json_context *context)
     if ((res = parse_value(tmp_node, context)) != PARSE_SUCCESS)
       return res;
     parse_space(context);
+    node->arr_len++;
     stack_push(context, (u8 *)tmp_node, sizeof(json_node));
   }
 }

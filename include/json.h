@@ -60,4 +60,6 @@ parse_result parse_value(json_node *, json_context *);
 
 parse_result parse_node(json_node *, const char *);
 
+json_node *get_array_element(json_node *node, u32 index);
+
 bool validate_number(const char *);
