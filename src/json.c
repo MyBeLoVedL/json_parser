@@ -1,5 +1,6 @@
 #include "json.h"
 #include "datatype.h"
+#include "myStr.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,29 +42,11 @@ json_type node_get_type(json_node *node)
   return node->type;
 }
 
-const char *get_obj_key(json_node *node, u32 index)
-{
-  assert(node->type == JSON_OEJECT);
-  assert(index >= 0 && index < node->mem_len);
-  return (node->member + index)->K;
-}
-
-json_node *get_obj_value(json_node *node, u32 index)
-{
-  assert(node->type == JSON_OEJECT);
-  assert(index >= 0 && index < node->mem_len);
-  return &((node->member + index)->V);
-}
-
 json_node *get_value_by_key(json_node *node, char *K)
 {
   assert(node->type == JSON_OEJECT);
-  for (int i = 0; i < node->mem_len; i++)
-  {
-    if (!strcmp(get_obj_key(node, i), K))
-      return get_obj_value(node, i);
-  }
-  return NULL;
+  area *a = get(node->ht, K, strlen(K));
+  return (json_node *)(a->start);
 }
 
 bool node_get_bool(json_node *node)
@@ -110,7 +93,7 @@ u32 node_get_string_len(json_node *node)
 
 void set_node_string(json_node *node, const char *src, u32 len)
 {
-  assert(node != NULL && (src != NULL || len == 0));
+  assert(node != 0 && (src != 0 || len == 0));
   node->start = malloc(len + 1);
   memcpy(node->start, src, len);
   *(node->start + len) = 0;
@@ -180,7 +163,7 @@ char *parse_4_hex(char *p, u32 *u)
   {
     u32 t = char_to_digit(*(p + 3 - i));
     if (t >= 16)
-      return NULL;
+      return 0;
     res += t << i * 4;
   }
   *u = res;
@@ -247,7 +230,11 @@ void free_node(json_node *node)
     }
     free(node->arr_start);
     break;
+  case JSON_OEJECT:
+    free_hash_table(node->ht);
+    break;
   default:
+
     break;
   }
 }
@@ -460,13 +447,12 @@ parse_result parse_array(json_node *node, json_context *context)
 parse_result parse_object(json_node *node, json_context *context)
 {
   const char *p = context->text;
-  u32 stack_init_pos = context->top;
   context->text++;
   parse_space(context);
   parse_result res;
-  json_member tmp_member;
   char *src;
   u32 len;
+  node->ht = new_hash_table();
   while (1)
   {
     p = context->text;
@@ -478,12 +464,8 @@ parse_result parse_object(json_node *node, json_context *context)
     }
     else if (*p == '}')
     {
-      u32 top = context->top - stack_init_pos;
       node->type = JSON_OEJECT;
-      node->member = malloc(top);
       context->text++;
-      memcpy(node->member, context->stack + stack_init_pos, top);
-      stack_pop(context, top);
       return PARSE_SUCCESS;
     }
     else if (*p == '\0')
@@ -492,19 +474,18 @@ parse_result parse_object(json_node *node, json_context *context)
     }
     if ((res = parse_string_raw(context, &src, &len)) != PARSE_SUCCESS)
       return PARSE_MISSING_KEY;
-    tmp_member.key_size = len;
-    tmp_member.K = malloc(len + 1);
-    memcpy(tmp_member.K, src, len);
-    tmp_member.K[len] = '\0';
+    char *t_char = strdup(src);
+    json_node tmp_node;
     parse_space(context);
     if (*(context->text) != ':')
       return PARSE_MISSING_SEMI_COLON;
     context->text++;
     parse_space(context);
-    if ((res = parse_value(&(tmp_member.V), context)) != PARSE_SUCCESS)
+    if ((res = parse_value(&(tmp_node), context)) != PARSE_SUCCESS)
       return PARSE_MISSING_VALUE;
-    node->mem_len++;
-    stack_push(context, (u8 *)&tmp_member, sizeof(json_member));
+    pair *p = new_pair(t_char, len, &tmp_node, sizeof(json_node));
+    free(t_char);
+    put(node->ht, p);
     parse_space(context);
   }
 }

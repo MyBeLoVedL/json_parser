@@ -1,0 +1,20 @@
+{
+  "name": "altair",
+  "age": 20,
+  "grades": {
+    "Math": 150,
+    "Chinese": 130
+  },
+  "isBoy": true,
+  "window.zoomLevel": 1,
+  "vim.easymotion": true,
+  "vim.incsearch": true,
+  "vim.useSystemClipboard": true,
+  "vim.useCtrlKeys": true,
+  "vim.hlsearch": true,
+  "vim.leader": "\\",
+  "vim.handleKeys": {
+    "<C-f>": false,
+    "<C-w>": true
+  }
+}

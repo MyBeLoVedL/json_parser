@@ -223,31 +223,40 @@ void test_number()
 
 void test_object()
 {
-  test_value(PARSE_SUCCESS, "{\"age\":12}", JSON_OEJECT);
-  EXPECT_STRING("age", get_obj_key(&test_node, 0));
-  EXPECT_DOUBLE(12.0, get_obj_value(&test_node, 0)->numeric);
-
+  // test_value(PARSE_SUCCESS, "{\"age\":12}", JSON_OEJECT);
   test_value(PARSE_SUCCESS, "{\"age\":12, \"name\" : \"altair Lee\"}", JSON_OEJECT);
-  EXPECT_STRING("age", get_obj_key(&test_node, 0));
-  EXPECT_DOUBLE(12.0, get_obj_value(&test_node, 0)->numeric);
-
-  EXPECT_STRING("name", get_obj_key(&test_node, 1));
-  EXPECT_STRING("altair Lee", get_obj_value(&test_node, 1)->start);
-
-  test_value(PARSE_SUCCESS, "{\"age\":12, \"name\" : \"altair Lee\",\"properties\" : {\"Chinese\": 130,\"Math\":150}}", JSON_OEJECT);
-
-  EXPECT_DOUBLE(150.0, get_obj_value(get_obj_value(&test_node, 2), 1)->numeric);
-
+  EXPECT_DOUBLE(12.0, get_value_by_key(&test_node, "age")->numeric);
+  EXPECT_INT(JSON_NUMBER, get_value_by_key(&test_node, "age")->type);
+  EXPECT_INT(JSON_STRING, get_value_by_key(&test_node, "name")->type);
   EXPECT_STRING("altair Lee", get_value_by_key(&test_node, "name")->start);
-  EXPECT_DOUBLE(130.0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Chinese")->numeric);
+  free_node(&test_node);
 
-  test_value(PARSE_MISSING_SEMI_COLON, "{\"age\" 12}", JSON_UNKOWN);
+  test_value(PARSE_SUCCESS, "{\"hobby\" : [\"Math\",\"CompSci\"]}", JSON_OEJECT);
+  EXPECT_INT(JSON_ARRAY, get_value_by_key(&test_node, "hobby")->type);
+  EXPECT_STRING("Math", get_value_by_key(&test_node, "hobby")->arr_start->start);
+  // test_value(PARSE_SUCCESS, "{\"age\":12, \"name\" : \"altair Lee\"}", JSON_OEJECT);
+  // EXPECT_INT(JSON_STRING, get_value_by_key(&test_node, "name")->type);
+  // EXPECT_STRING("altair Lee", get_value_by_key(&test_node, "name")->start);
+  // EXPECT_STRING("age", get_obj_key(&test_node, 0));
+  // EXPECT_DOUBLE(12.0, get_obj_value(&test_node, 0)->numeric);
 
-  test_value(PARSE_MISSING_KEY, "{: 12}", JSON_UNKOWN);
+  // EXPECT_STRING("name", get_obj_key(&test_node, 1));
+  // EXPECT_STRING("altair Lee", get_obj_value(&test_node, 1)->start);
 
-  test_value(PARSE_MISSING_VALUE, "{\"age \": }", JSON_UNKOWN);
-  // EXPECT_INT(0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Cinese")->numeric);
-  int fd = open("../test_json.txt", O_RDONLY);
+  // test_value(PARSE_SUCCESS, "{\"age\":12, \"name\" : \"altair Lee\",\"properties\" : {\"Chinese\": 130,\"Math\":150}}", JSON_OEJECT);
+
+  // EXPECT_DOUBLE(150.0, get_obj_value(get_obj_value(&test_node, 2), 1)->numeric);
+
+  // EXPECT_STRING("altair Lee", get_value_by_key(&test_node, "name")->start);
+  // EXPECT_DOUBLE(130.0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Chinese")->numeric);
+
+  // test_value(PARSE_MISSING_SEMI_COLON, "{\"age\" 12}", JSON_UNKOWN);
+
+  // test_value(PARSE_MISSING_KEY, "{: 12}", JSON_UNKOWN);
+
+  // test_value(PARSE_MISSING_VALUE, "{\"age \": }", JSON_UNKOWN);
+  // // EXPECT_INT(0, get_value_by_key(get_value_by_key(&test_node, "properties"), "Cinese")->numeric);
+  int fd = open("../test_json.json", O_RDONLY);
   if (fd < 0)
   {
     perror("file open error");
@@ -264,6 +273,10 @@ void test_object()
   test_value(PARSE_SUCCESS, buf, JSON_OEJECT);
   EXPECT_STRING("altair", get_value_by_key(&test_node, "name")->start);
   EXPECT_DOUBLE(150.0, get_value_by_key(get_value_by_key(&test_node, "grades"), "Math")->numeric);
+  EXPECT_INT(JSON_NUMBER, get_value_by_key(&test_node, "age")->type);
+  EXPECT_INT(JSON_TRUE, get_value_by_key(&test_node, "isBoy")->type);
+  EXPECT_INT(JSON_TRUE, get_value_by_key(get_value_by_key(&test_node, "vim.handleKeys"), "<C-w>")->type);
+  free_node(&test_node);
 }
 
 void test_parse()

@@ -1,5 +1,6 @@
 #pragma once
 #include "datatype.h"
+#include "hash_table.h"
 
 void say_hello(const char *);
 
@@ -55,8 +56,7 @@ struct json_node
     };
     struct
     {
-      json_member *member;
-      u32 mem_len;
+      hash_table *ht;
     };
   };
 };
@@ -80,11 +80,7 @@ parse_result parse_node(json_node *, const char *);
 
 json_node *get_array_element(json_node *node, u32 index);
 
-const char *get_obj_key(json_node *node, u32 index);
-
-json_node *get_obj_value(json_node *node, u32 index);
-
-json_node *get_value_by_key(json_node *node,char *K);
+json_node *get_value_by_key(json_node *node, char *K);
 
 bool validate_number(const char *);
 
